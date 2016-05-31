@@ -1,8 +1,6 @@
 {
-    "config":{
-      "publicKey":"XXXXXXXX", 
-      "privateKey":"XXXXXXXXXX",
-      "token":"XXXXXXXXXXXXX",
-      "tokenSecret":"XXXXXXXXXXXX"
+      "publicKey":"XXXXXXXXXX", 
+      "privateKey":"XXXXXXXXX",
+      "token":"XXXXXXXXXXXXXXXX",
+      "tokenSecret":"XXXXXXXXXXXXXXXXX"
   }
-}
