@@ -1,5 +1,5 @@
 var express = require('express'),
-TelldusLive = require('./TelldusLive'),
+TelldusLive = require('./app/TelldusLive'),
 serverConfig = require('./server.json'),
 sensorCollection = require('./app/sensorCollection')
 database = require('./app/database')

@@ -1,5 +1,5 @@
 
-"user strict"
+"use strict"
 var cron = require('node-cron');
 var _ = require('lodash');
 var promise = require('q');
@@ -19,7 +19,7 @@ var schedulingService = function(telldusAPI, nedb){
 }
 
 //Private
-startScheduledCollectionSensors = function(){
+var startScheduledCollectionSensors = function(){
     var q = promise.defer();
     cron.schedule('*/5 * * * * *', function(){
            tdapi.getSensors().then(function(data){
@@ -41,11 +41,15 @@ startScheduledCollectionSensors = function(){
     });
 };
 
-processSensors = function(sensorList){
-    
+var processSensors = function(sensorList){
+    function validateList(){
+        if(sensorList.length > 0){
+            remove();
+        }
+    }
     //TODO: refactor loop
-     for(var o in sensorList){
-         var sensor = sensorList[o];
+     function remove(){
+         var sensor = sensorList.pop();
          var dataObject = {date: new Date().toISOString()};
          var temps = _.find(sensor.data,function(i){
                 return i.name == "temp";
@@ -59,12 +63,29 @@ processSensors = function(sensorList){
          if(humitidy){
              dataObject.humidity = humitidy.value;
          }
-         //TODO Dont use upsert
-         db.sensors.update({'id':sensor.id},{$push: {data: dataObject}}, { upsert: true },function(err,doc){
-                if (err) console.log(2,err);
-                console.log(3,doc);
+         var sensor_id = sensor.id;
+         db.sensors.find({id:sensor_id}, function(err,doc){
+             
+                if(doc == null || doc.length == 0){
+                    console.log("add new",sensor_id);
+                    var addNew = {
+                        id: sensor_id,
+                        data: [dataObject]
+                    }
+                    db.sensors.insert(addNew,function(err,doc){
+                      // console.log(doc);
+                      validateList();
+                    });
+                }else{
+                    console.log("updating");
+                    db.sensors.update({id: sensor_id},{$push: {data: dataObject}},function(err,doc){
+                    if (err) console.log(err);});
+                    validateList();
+                }
          });
      };
+     
+  validateList();
 };
 
 module.exports = schedulingService;

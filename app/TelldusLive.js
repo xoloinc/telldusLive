@@ -1,7 +1,8 @@
 
+"use strict"
 var tdAPI = require('telldus-live');
 var _ = require('lodash');
-var config = require('./config.json');
+var config = require('../config.json');
 var promise = require('q');
 var publicKey    = config.publicKey
   , privateKey   = config.privateKey
