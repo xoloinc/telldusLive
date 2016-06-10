@@ -21,7 +21,7 @@ var schedulingService = function(telldusAPI, nedb){
 //Private
 var startScheduledCollectionSensors = function(){
     var q = promise.defer();
-    cron.schedule('*/5 * * * * *', function(){
+    cron.schedule('* 0 * * * *', function(){
            tdapi.getSensors().then(function(data){
                  var promiseCollection = [];
                _(data).forEach(function(sensor){
@@ -50,7 +50,7 @@ var processSensors = function(sensorList){
     //TODO: refactor loop
      function remove(){
          var sensor = sensorList.pop();
-         var dataObject = {date: new Date().toISOString()};
+         var dataObject = {date: new Date()};
          var temps = _.find(sensor.data,function(i){
                 return i.name == "temp";
          });
@@ -67,17 +67,14 @@ var processSensors = function(sensorList){
          db.sensors.find({id:sensor_id}, function(err,doc){
              
                 if(doc == null || doc.length == 0){
-                    console.log("add new",sensor_id);
                     var addNew = {
                         id: sensor_id,
                         data: [dataObject]
                     }
                     db.sensors.insert(addNew,function(err,doc){
-                      // console.log(doc);
                       validateList();
                     });
                 }else{
-                    console.log("updating");
                     db.sensors.update({id: sensor_id},{$push: {data: dataObject}},function(err,doc){
                     if (err) console.log(err);});
                     validateList();
