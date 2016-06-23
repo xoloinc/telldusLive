@@ -12,7 +12,6 @@ schedule = null,
 sensors = null;
 
 var addHeader = function (req, res, next) {
-  console.log("set header");
   res.set('Content-Type', 'application/json');
   next();
 };
@@ -30,10 +29,12 @@ app.get('/api/sensors/:sensorId', function (req, res) {
   })
 });
 app.get('/api/sensors/:sensorId/history/:startDate?/:endDate?', function (req, res) {
-  console.log(req.params.sensorId,req.params.startDate,req.params.endDate);
+  if(!sensors){
+    res.send(404,'sensors not initialized');
+    return;
+  }
     sensors.getSensorHistory(req.params.sensorId,req.params.startDate,req.params.endDate).then(function(data){
       res.send(data);
-      console.log(new Date(data[0].data[0].date));
     },function(){
         res.sendStatus(204);
     });
@@ -43,10 +44,12 @@ app.listen(serverConfig.port, function () {
   //initial verificaton that oauth is correct
   tdl.initOauth().then(
     function(user){
-      console.log("Authentication successfull");
+      console.log("3rd party authentication successfull");
       db.get('sensorsData').then(function(data){
         schedule = new scheduler(tdl,db);
         sensors = new sensorCollection(db);
+      },function(err){
+        console.log('Init db failed:',err);
       });
     },
     function(err){

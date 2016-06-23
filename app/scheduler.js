@@ -2,6 +2,7 @@
 "use strict"
 var cron = require('node-cron');
 var _ = require('lodash');
+var serverConfig = require('../server.json');
 var promise = require('q');
 //Scheduling data collection private
 var scheduledJob = null; 
@@ -21,7 +22,7 @@ var schedulingService = function(telldusAPI, nedb){
 //Private
 var startScheduledCollectionSensors = function(){
     var q = promise.defer();
-    cron.schedule('* 0 * * * *', function(){
+    cron.schedule(serverConfig.schedule, function(){
            tdapi.getSensors().then(function(data){
                  var promiseCollection = [];
                _(data).forEach(function(sensor){
@@ -64,18 +65,18 @@ var processSensors = function(sensorList){
              dataObject.humidity = humitidy.value;
          }
          var sensor_id = sensor.id;
-         db.sensors.find({id:sensor_id}, function(err,doc){
+         db.sensorsData.find({id:sensor_id}, function(err,doc){
              
                 if(doc == null || doc.length == 0){
                     var addNew = {
                         id: sensor_id,
                         data: [dataObject]
                     }
-                    db.sensors.insert(addNew,function(err,doc){
+                    db.sensorsData.insert(addNew,function(err,doc){
                       validateList();
                     });
                 }else{
-                    db.sensors.update({id: sensor_id},{$push: {data: dataObject}},function(err,doc){
+                    db.sensorsData.update({id: sensor_id},{$push: {data: dataObject}},function(err,doc){
                     if (err) console.log(err);});
                     validateList();
                 }
